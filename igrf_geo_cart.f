@@ -1,0 +1,198 @@
+      SUBROUTINE IGRF_GEO_CART (GS,HS,
+     .     XGEO,YGEO,ZGEO,
+     .     HXGEO,HYGEO,HZGEO)
+c
+C  CALCULATES COMPONENTS OF THE MAIN (INTERNAL) GEOMAGNETIC FIELD IN THE GEOCENTRIC SOLAR-WIND
+C  (GSW) COORDINATE SYSTEM, USING IAGA INTERNATIONAL GEOMAGNETIC REFERENCE MODEL COEFFICIENTS
+C  (e.g., http://www.ngdc.noaa.gov/IAGA/vmod/igrf.html, revised 22 March, 2005)
+c
+C  THE GSW SYSTEM IS ESSENTIALLY SIMILAR TO THE STANDARD GSM (THE TWO SYSTEMS BECOME IDENTICAL
+C  TO EACH OTHER IN THE CASE OF STRICTLY ANTI-SUNWARD SOLAR WIND FLOW). FOR A DETAILED
+C  DEFINITION, SEE INTRODUCTORY COMMENTS FOR THE SUBROUTINE GSWGSE_08 .
+C
+C  BEFORE THE FIRST CALL OF THIS SUBROUTINE, OR, IF THE DATE/TIME (IYEAR,IDAY,IHOUR,MIN,ISEC),
+C  OR THE SOLAR WIND VELOCITY COMPONENTS (VGSEX,VGSEY,VGSEZ) HAVE CHANGED, THE MODEL COEFFICIENTS
+c  AND GEO-GSW ROTATION MATRIX ELEMENTS SHOULD BE UPDATED BY CALLING THE SUBROUTINE RECALC_08.
+C
+C-----INPUT PARAMETERS:
+C
+C     XGSW,YGSW,ZGSW - CARTESIAN GEOCENTRIC SOLAR-WIND COORDINATES (IN UNITS RE=6371.2 KM)
+C
+C-----OUTPUT PARAMETERS:
+C
+C     HXGSW,HYGSW,HZGSW - CARTESIAN GEOCENTRIC SOLAR-WIND COMPONENTS OF THE MAIN GEOMAGNETIC
+C                           FIELD IN NANOTESLA
+C
+C     LAST MODIFICATION:  MARCH 21, 2008 (DOUBLE-PRECISION VERSION)
+C     THIS VERSION OF THE CODE ACCEPTS DATES FROM 1965 THROUGH 2015.
+c
+C     AUTHOR: N. A. TSYGANENKO
+C
+C
+      IMPLICIT NONE
+      REAL*8 XGEO,YGEO,ZGEO,HXGEO,HYGEO,HZGEO
+      INTEGER N,N2,M,MN,IRP3,K,MM,NM,MNN
+
+      REAL*8 RHO,RHO2,R,C,S,CF,SF,PP,P,D,AN,E,HH
+      REAL*8 BBF,BBR,BBT,BI,D2,DP,HE,P2,PM,Q,QQ,W,XK,X,Y,Z
+
+      REAL*8 AA
+      
+      REAL*8 BR,BPHI,BTHETA
+      
+      REAL*8 G(105),H(105),GS(105),HS(105),REC(105)
+     
+      REAL*8 A(14),B(14)
+
+C
+C   COEFFICIENTS FOR A GIVEN YEAR HAVE BEEN CALCULATED; NOW MULTIPLY
+C   THEM BY SCHMIDT NORMALIZATION FACTORS:
+C
+      G = GS
+      H = HS
+      S = 1.0d0
+      DO N=2,14
+         MN=N*(N-1)/2+1
+         S=S*DFLOAT(2*N-3)/DFLOAT(N-1)
+         G(MN)=G(MN)*S
+         H(MN)=H(MN)*S
+         P=S
+         DO M=2,N
+            AA=1.D0
+            IF (M.EQ.2) AA=2.D0
+            P=P*DSQRT(AA*DFLOAT(N-M+1)/DFLOAT(N+M-2))
+            MNN=MN+M-1
+            G(MNN)=G(MNN)*P
+            H(MNN)=H(MNN)*P
+         ENDDO
+      ENDDO
+      
+C     
+C  CALCULATE THE ARRAY REC, CONTAINING COEFFICIENTS FOR THE RECURSION RELATIONS,
+C  USED IN THE IGRF SUBROUTINE FOR CALCULATING THE ASSOCIATE LEGENDRE POLYNOMIALS
+C  AND THEIR DERIVATIVES:
+c
+      DO N=1,14
+         N2=2*N-1
+         N2=N2*(N2-2)
+         DO M=1,N
+            MN=N*(N-1)/2+M
+            REC(MN)=DFLOAT((N-M)*(N+M-2))/DFLOAT(N2)
+         ENDDO
+      ENDDO
+      
+      RHO2=XGEO**2+YGEO**2
+      R=DSQRT(RHO2+ZGEO**2)
+      C=ZGEO/R
+      RHO=DSQRT(RHO2)
+      S=RHO/R
+      IF (S.LT.1.D-10) THEN
+        CF=1.D0
+        SF=0.D0
+      ELSE
+        CF=XGEO/RHO
+        SF=YGEO/RHO
+      ENDIF
+
+C
+      PP=1.D0/R
+      P=PP
+C
+C  IN THIS VERSION, THE OPTIMAL VALUE OF THE PARAMETER NM (MAXIMAL ORDER OF THE SPHERICAL
+C    HARMONIC EXPANSION) IS NOT USER-PRESCRIBED, BUT CALCULATED INSIDE THE SUBROUTINE, BASED
+C      ON THE VALUE OF THE RADIAL DISTANCE R:
+C
+      IRP3=R+2
+      NM=3+30/IRP3
+      IF (NM.GT.13) NM=13
+
+      K=NM+1
+      DO N=1,K
+         P=P*PP
+         A(N)=P
+         B(N)=P*N
+      ENDDO
+      
+      P=1.D0
+      D=0.D0
+      BBR=0.D0
+      BBT=0.D0
+      BBF=0.D0
+
+      DO  M=1,K
+         IF(M.EQ.1) THEN
+            X=0.D0
+            Y=1.D0
+         ELSE
+            MM=M-1
+            W=X
+            X=W*CF+Y*SF
+            Y=Y*CF-W*SF
+         ENDIF
+         Q=P
+         Z=D
+         BI=0.D0
+         P2=0.D0
+         D2=0.D0
+         DO  N=M,K
+            AN=A(N)
+            MN=N*(N-1)/2+M
+            E=G(MN)
+            HH=H(MN)
+            W=E*Y+HH*X
+            
+            BBR=BBR+B(N)*W*Q
+            BBT=BBT-AN*W*Z
+            
+            IF(M.EQ.1) GOTO 180
+            QQ=Q
+            IF(S.LT.1.D-10) QQ=Z
+            BI=BI+AN*(E*X-HH*Y)*QQ
+            
+180         XK=REC(MN)
+            DP=C*Z-S*Q-XK*D2
+            PM=C*Q-XK*P2
+            D2=Z
+            P2=Q
+            Z=DP
+            Q=PM
+         ENDDO
+         
+         D=S*D+C*P
+         P=S*P
+         IF(M.EQ.1) THEN
+         ELSE
+            BI=BI*MM
+            BBF=BBF+BI
+         ENDIF
+      ENDDO
+C
+      BR=BBR
+      BTHETA=BBT
+
+      IF(S.LT.1.D-10) THEN
+         IF(C.LT.0.) BBF=-BBF
+         BPHI=BBF
+      ELSE
+         BPHI=BBF/S
+      ENDIF
+      
+c      IF(S.LT.1.D-10) GOTO 210
+c      BPHI=BBF/S
+c      GOTO 211
+c210   IF(C.LT.0.) BBF=-BBF
+c      BPHI=BBF
+
+c     Convert the spherical vector to Cartesian
+ 211  HE=BR*S+BTHETA*C
+      
+      HXGEO = HE*CF -   BPHI*SF
+      HYGEO = HE*SF +   BPHI*CF
+      HZGEO = BR*C  - BTHETA*S
+      
+      RETURN
+      END
+
+
+
+      
