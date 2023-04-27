@@ -1,7 +1,7 @@
 # Saturn-Mag-Model
 FORTRAN source code for a Saturnian magnetospheric empirical magnetic field model derived from Cassini magnetometer data 
 
-License: 3-Clause BSD
+<img src="docs/3dcurrents.png" width="300">
 
 # About
 This is a FORTRAN 77ish implementation of an external magnetic field
@@ -35,6 +35,9 @@ Blank for now.
 
 # FAQs
 None as of yet.
+
+#License
+3-Clause BSD
 
 # Author
 Grant K. Stephens
