@@ -36,9 +36,11 @@ Blank for now.
 # FAQs
 None as of yet.
 
-# Author:
+# Author
 Grant K. Stephens
              Grant.Stephens@jhuapl.edu
+https://twitter.com/GrantKStephens
+[webpage](https://civspace.jhuapl.edu/people/grant-stephens)
 
 # Acknowledgments
 The authors would like to thank all the people who helped
