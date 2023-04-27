@@ -36,8 +36,8 @@ Blank for now.
 # FAQs
 None as of yet.
 
-#License
-3-Clause BSD
+# License
+[3-Clause BSD](LICENSE)
 
 # Author
 Grant K. Stephens
@@ -46,24 +46,6 @@ https://twitter.com/GrantKStephens
 [webpage](https://civspace.jhuapl.edu/people/grant-stephens)
 
 # Acknowledgments
-The authors would like to thank all the people who helped
-develop and advance this model and source code. The data used to fit the model
-is from the Cassini Magnetometer (Dougherty et al. 2004) and was obtained from
-the Planetary Data System (PDS). The internal magnetic field is an
-implementation of Dougherty et al. (2018) and the source code is derived from
-N.A.Tsyganenko's Geopack library. The structure and source code for the
-equatorial and dipole shielding fields is derived from the works and code of
-N.A.Tsyganenko and M.I.Sitnov. The time conversion API derives from the
-NASA/NAIF SPICE toolkit along with K.Khurana's KMAG/JMAG source code. The
-modeled magnetopause is from Pilkington et al. (2015), additionally, the
-magnetopause crossings list provided by C.Jackman is used to filter out
-magnetometer data outside the magnetosphere. The bowl deformation derives from
-Arridge et al. (2008) and the implementation is derived from K.Khurana's KMAG
-model. The solar wind dynamic pressure is derived from the Tao et al. (2005)
-model and was obtained from the AMDA archive. The subroutine that computes the
-Sun's position (KSUN) is taken from K.Khurana's KMAG model. The Bessel function
-evaluator was supplied by J.M.Albert. Several subroutines derive from
-subroutines included in the NASA/NAIF SPICE toolkit. 
-
+The authors would like to thank all the people who helped develop and advance this model and source code. The data used to fit the model is from the Cassini Magnetometer (Dougherty et al. 2004) and was obtained from the Planetary Data System (PDS). The internal magnetic field is an implementation of Dougherty et al. (2018) and the source code is inspired from N.A.Tsyganenko's Geopack library. The model structure, particularly for the equatorial and dipole shielding fields, is derived from the TS07D model (Tsyganenko & Sitnov, 2007) for Earth's magnetic field. The date and time API was inspired from the NASA/NAIF SPICE toolkit along with K.Khurana's KMAG/JMAG source code. The modeled magnetopause is from Pilkington et al. (2015), additionally, the magnetopause crossings list provided by C.Jackman is used to filter out magnetometer data outside the magnetosphere. The bowl deformation derives from Arridge et al. (2008) and the implementation is derived from K.Khurana's KMAG model. The solar wind dynamic pressure is derived from the Tao et al. (2005) model and was obtained from the AMDA archive. The subroutine that computes the Sun's position (KSUN) is taken from K.Khurana's KMAG model. The Bessel function evaluator was supplied by J.M.Albert.
 
 
