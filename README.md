@@ -31,7 +31,16 @@ model inputs and compares the model outputs. Agreement is good to about 10
 digits.
 
 # Getting Started
-Blank for now.
+The model source code is self-contained, meaning it requires no external dependencies or libraries. The model was developed on a Mac using [GFortran](https://gcc.gnu.org/wiki/GFortran).
+
+Assuming GFortran is [installed](https://gcc.gnu.org/wiki/GFortranBinaries), the model can be compiled using the following: 
+`gfortran example_saturn.for saturn_int.f saturn_ext.f cart_field_to_sphere.f dipoleshield.f igrf_geo_08.f read_pdyn.f tailsheet.f tailsheet_sym.f tailsheet_asym.f bowldeform.f cartharmonic.f cartharmonic_alt.f igrf_geo_cart.f rotate_about_y.f bessjj.f utc_to_tdt.f cart_field_to_cyl.f find_left_index.f ksun.f -o example_saturn`
+
+This will compile the example program contained in the file `example_saturn.for` into an executable file named `example_saturn`.
+
+The executable can then be run on Unix systems using `./example_saturn`. The output of this program should produce:
+
+
 
 # FAQs
 None as of yet.
