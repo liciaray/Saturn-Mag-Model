@@ -112,6 +112,7 @@ c     Prints out the results.
      .     "Date:    ",year,"-",month,"-",dom,
      .     " ",hour,":",min,":",sec
       write(*,*) "TDT:     ",TDT
+      write(*,*) "Dp:  ",pdyn
       write(*,*) "sunLat:  ",sunLat
       write(*,*) "(x,y,z):    ",x,y,z
       write(*,*) "(bx,by,bz):    ",bx,by,bz
