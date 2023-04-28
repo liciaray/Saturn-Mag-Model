@@ -40,7 +40,15 @@ This will compile the example program contained in the file `example_saturn.for`
 
 The executable can then be run on Unix systems using `./example_saturn`. The output of this program should produce:
 
-
+>Date:    2013-04-21 22:53:28.39823\
+ TDT:        419856875.58223003     \
+ Dp:     2.3699125945428222E-003\
+ sunLat:    0.31991904766201745     \
+ (x,y,z):      -12.381273999999999        3.8901874300000001        2.1981273432987001     \
+ (bx,by,bz):       6.2702298378116481       -1.2576152407132852        7.0949159196898739     \
+ (hx,hy,hz):      0.74732969552778661       -1.1478438385940311       -9.4198143792161204     \
+ (r,theta,phi):       13.162874607051583        1.4030157792196860        2.8371604325738131     \
+ (br,btheta,bphi):      -7.7000229788156362        1.0538352925036358       0.19132520816048570
 
 # FAQs
 None as of yet.
