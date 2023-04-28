@@ -36,13 +36,13 @@ c
 c     the first and last values in the array
       t0 = ts(1)
       t1 = ts(size)
-
+      
 c     First, let's check if the t is less than the first value in the
 c     array or greater than or equal to the last value.
       if (t .lt. t0) then
-         find_last_index_lte = 0
+         find_left_index = 0
       else if (t .ge. t1) then
-         find_last_index_lte = size
+         find_left_index = size
       else 
 
 c     Now we will start a binary search algorithm. To begin, set the
@@ -88,7 +88,7 @@ c     if the value to the right of m is <= t, we need to add 1 to m
          endif
 
 c     set the return value to m
-         find_last_index_lte = m
+         find_left_index = m
          
       end if
      
