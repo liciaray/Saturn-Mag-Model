@@ -1,4 +1,13 @@
+----- Version 1.0.1, 2023/11/08
+
+- A function was added to determine if a location is inside or outside the modeled magnetopause surface. The example program now reflects this change.
+
+----- Version 1.0, 2023/04/28
+
+- This is the initial release on the NASA-Planetary-Science GitHub repository. The source code is now available for general public use under the BSD 3-Clause License.
+
+- The source code is functionally equivalent to the prototype release, but some subroutines have been changed and renamed to remove dependencies on 3rd party codes. Further, more comments have been inserted into the code.
+
 ----- Version 0.0, 2019/06/10
 
-- This is the initial prototype release to be distributed to the Cassini MIMI
-   teaam.
+- This is the initial prototype release to be distributed to the Cassini MIMI team.
