@@ -18,6 +18,7 @@ c     TDT:        419856875.58223003
 c     sunLat:    0.31991904766201745     
 c     (x,y,z):
 c       -12.381273999999999    3.8901874300000001    2.1981273432987001
+c     inside:      T
 c     (bx,by,bz):
 c        6.2702298378118524   -1.2576152407132852    7.0949159196904112
 c     (hx,hy,hz):
@@ -40,6 +41,8 @@ c
       
       real*8 sunLat,sunLong, zPhi,zTheta
 
+      logical inside,inside_magpause
+      
       real*8 x,y,z
       
       real*8 bx,by,bz, hx,hy,hz, bTotx,bToty,bTotz
@@ -85,9 +88,20 @@ c     The position vector in KSM coordinates in units of Saturn radii.
       x = -12.381274d0
       y = 3.89018743d0
       z = 2.1981273432987d0
+
+c     Evalutes if the position vector is inside or outside the modeled
+c     magnetopause (true if inside, false if on or outside). Note, if
+c     the position is outside the magnetopause, the subroutines
+c     saturn_ext and saturn_int will still return vectors, but these
+c     vectors will not have any physical signficance. We leave it up to
+c     the user to decide how to handle vectors outside the
+c     magnetosphere.     
+      inside = inside_magpause(sunLat, pDyn,
+     .     x,y,z)
       
 c     Evaluates the external magnetic field in KSM coordinates in units
-c     of nT.
+c     of nT. As stated above, this subroutine will still return vectors
+c     even if the position vector is outside the modeled magnetopause.
       call saturn_ext(sunLat, pDyn,
      .     x,y,z,
      .     bx,by,bz)
@@ -115,6 +129,7 @@ c     Prints out the results.
       write(*,*) "Dp:  ",pdyn
       write(*,*) "sunLat:  ",sunLat
       write(*,*) "(x,y,z):    ",x,y,z
+      write(*,*) "inside:     ",inside
       write(*,*) "(bx,by,bz):    ",bx,by,bz
       write(*,*) "(hx,hy,hz):    ",hx,hy,hz
       write(*,*) "(r,theta,phi):    ",r,theta,phi

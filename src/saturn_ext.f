@@ -170,3 +170,101 @@ c     equatorial field
       bz = bdz+btKSMz      
       
       END
+
+
+      logical function inside_magpause(sunAngle, pDyn,
+     .     x,y,z)
+c      
+c     Determines if the supplied location is inside (returns true) or
+c     outside or on (returns false) the modeled magnetopause surface.
+c     Note, the magnetopause surface is warped using the bowl
+c     deformation and is rescaled using self-similar pressure rescaling
+c     in the same fashion as the other magnetospheric current systems.
+c
+c     Inputs:
+c     real*8 sunAngle: The latitude of the Sun's position relative to
+c       Saturn's rotational equatorial plane. This angle is the same as
+c       the dipole tilt angle.
+c     real*8 pDyn: The dynamic pressure of the solar wind measured in
+c       nPa.
+c     real*8 x,y,z: The location to evaluate the value of the external
+c       magnetic field in the KSM coordinate system in units of Saturn
+c       radii.
+c      
+c     Outputs:
+c     logical inside_magpause: Returns true if the supplied location is
+c     inside the modeled magnetopause and false if it is outside or on
+c     the surface.
+c      
+      IMPLICIT NONE
+
+c     Inputs
+      REAL*8 sunAngle,pDyn, x,y,z
+      
+c     Internal variables
+      REAL*8 scale, xScale,yScale,zScale, xKSMAG,yKSMAG,zKSMAG
+      REAL*8 xMap,yMap,zMap, rMap
+      REAL*8 r0,theta,rMagpause
+
+c     Constants
+      REAL*8     a1
+      PARAMETER (a1 = 10.5d0)
+      REAL*8     a2
+      PARAMETER (a2 = 1.0d0/5.7d0)
+      REAL*8     a3
+      PARAMETER (a3 = 0.67d0)
+      REAL*8     a4
+      PARAMETER (a4 = 0.17d0)
+      REAL*8     pDyn0
+      PARAMETER (pDyn0 = 0.017d0)
+      REAL*8     rH
+      PARAMETER (rH = 23.0d0)   
+      REAL*8     plasmaBeta
+      PARAMETER (plasmaBeta = 3.0d0)  
+      
+c     Perform the self-similar scaling to the position vector.
+c     This is the same scaling that is done to the magnetopause.
+      scale = (pDyn/pDyn0)**a2
+      xScale = scale*x
+      yScale = scale*y
+      zScale = scale*z      
+
+c     convert the scaled KSM coordinate to KSMAG
+      call rotate_about_y(sunAngle,
+     .     xScale,yScale,zScale,
+     .     xKSMAG,yKSMAG,zKSMAG)
+
+c     compute the bowl deformed position, input is KSMAG coordinates
+      call bowldeform(rH,sunAngle,
+     .     xKSMAG,yKSMAG,zKSMAG,
+     .     xMap,yMap,zMap)
+
+c     compute the radius of the bowl deformed position
+      rMap = DSQRT(xMap**2+yMap**2+zMap**2)
+
+c     if the radius is zero, return true
+      if (rMap .eq. 0.0d0) then
+         inside_magpause = .true.
+      else
+
+c     Now evaluate the Pilkington et al. (2015) model. Note, we evaluate
+c     using the baseline dynamic pressure (pDyn0) and not the
+c     instantaneous dynamic pressure (pDyn). This is because the dynamic
+c     pressure rescaling has already been performed above.
+         theta=DATAN2(DSQRT(yMap**2+zMap**2),xMap)
+
+c     the values of Pilkington using the actual value of Pdyn
+c     r0 = a1*(pDyn/(1.0d0+plasmaBeta))**(-a2)
+c     rMagpause = r0*(2.0d0/(1.0d0+COS(theta)))**(a3+a4*pdyn)
+
+c     eq. (12) 
+         r0 = a1*(pDyn0/(1.0d0+plasmaBeta))**(-a2)
+c     eq. (1)
+         rMagpause = r0*(2.0d0/(1.0d0+COS(theta)))**(a3+a4*pDyn0)
+
+         inside_magpause = rMap .lt. rMagpause
+      endif
+      
+      end
+
+      
