@@ -268,3 +268,76 @@ c     eq. (1)
       end
 
       
+      SUBROUTINE distance_to_sheet (sunAngle, pDyn,
+     .     x,y,z,
+     .     xCS,yCS,zCS, distCS)
+c      
+c     Computes the shortest distance and closest point from the supplied
+c     location to the Bowl current sheet.
+c
+c     Inputs:
+c     real*8 sunAngle: The latitude of the Sun's position relative to
+c       Saturn's rotational equatorial plane. This angle is the same as
+c       the dipole tilt angle.
+c     real*8 pDyn: The dynamic pressure of the solar wind measured in
+c       nPa.
+c     real*8 x,y,z: The location to evaluate the shortest distance to
+c       the Bowl current sheet in KSM coordinates in units of Saturn radii.
+c     
+c     Outputs:
+c     real*8 xCS,yCS,zCS: The point on Bowl current sheet that is 
+c       closest to the supplied location in KSM coordinates in units of
+c       Saturn radii.
+c     real*8 distCS: The shortest distance (unsigned) from the supplied
+c       location to the Bowl current sheet in units of Saturn radii.
+c     
+      IMPLICIT NONE
+
+c     Inputs
+      REAL*8 sunAngle,pDyn, x,y,z
+      
+c     Outputs
+      REAL*8 xCS,yCS,zCS, distCS
+      
+c     Internal variables
+      REAL*8 scale, xScale,yScale,zScale, xKSMAG,yKSMAG,zKSMAG
+      REAL*8 xCS_KSMAG,yCS_KSMAG,zCS_KSMAG
+      
+c     Constants
+      REAL*8     a2
+      PARAMETER (a2 = 1.0d0/5.7d0)
+      REAL*8     pDyn0
+      PARAMETER (pDyn0 = 0.017d0)
+      REAL*8     rH
+      PARAMETER (rH = 23.0d0)
+      
+c     Perform the self-similar scaling to the position vector.
+c     This is the same scaling that is done to the magnetopause.
+      scale = (pDyn/pDyn0)**a2
+      xScale = scale*x
+      yScale = scale*y
+      zScale = scale*z      
+      
+c     convert the scaled KSM coordinate to KSMAG
+      call rotate_about_y(sunAngle,
+     .     xScale,yScale,zScale,
+     .     xKSMAG,yKSMAG,zKSMAG)
+
+c     compute the distance to the Bowl current sheet, in KSMAG. Note,
+c     the minus sign is because the deformation is the negation of
+c     the current sheet.
+      call bowldist(rH,-sunAngle, xKSMAG,yKSMAG,zKSMAG,
+     .     xCS_KSMAG,yCS_KSMAG,zCS_KSMAG, distCS)
+      
+c     now, rotate back to KSM coordinates
+      call rotate_about_y(-sunAngle,
+     .     xCS_KSMAG,yCS_KSMAG,zCS_KSMAG,
+     .     xCS,yCS,zCS)
+      
+c     finally, rescale the results to match the supplied coordinates
+      xCS = xCS/scale
+      yCS = yCS/scale
+      zCS = zCS/scale
+      distCS = distCS/scale
+      
+      end

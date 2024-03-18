@@ -9,7 +9,7 @@ c     (nT).
 c
 c     The program can be compiled using the following using gfortran:
 c     
-c     gfortran example_saturn.f -o example_saturn
+c     gfortran example_saturn.for -o example_saturn
 c      
 c     The expected output of this program is the following:
 c     
@@ -47,6 +47,7 @@ c
       
       real*8 bx,by,bz, hx,hy,hz, bTotx,bToty,bTotz
       real*8 r,theta,phi, br,btheta,bphi
+      real*8 xCS,yCS,zCS, distCS
       
 c     The file containing the dynamic pressure of the solar wind at
 c     Saturn. This file is derived from the Tao et al. (2005) model and
@@ -109,7 +110,7 @@ c     even if the position vector is outside the modeled magnetopause.
 c     Evaluates the internal magnetic field (Dougherty et al. 2018) in
 c     KSM coordinates in units of nT.
       call saturn_int(sunLat, x,y,z, hx,hy,hz)
-
+      
 c     The total magnetic field is the sum of the external and internal
 c     fields.
       bTotx = bx + hx
@@ -121,19 +122,25 @@ c     Converts the Cartesian total field value to spherical coordinates.
      .     bTotx,bToty,bTotz,
      .     r,theta,phi, br,btheta,bphi)
 
+c     Evaluates the distance and the closest location from the supplied
+c     location to the Bowl shaped current sheet.
+      call distance_to_sheet(sunLat, pDyn, x,y,z, xCS,yCS,zCS, distCS)
+      
 c     Prints out the results.
       write(*,'(A,I4,A,I0.2,A,I0.2,A,I0.2,A,I0.2,A,F8.5)')
-     .     "Date:    ",year,"-",month,"-",dom,
+     .     "Date:            ",year,"-",month,"-",dom,
      .     " ",hour,":",min,":",sec
-      write(*,*) "TDT:     ",TDT
-      write(*,*) "Dp:  ",pdyn
-      write(*,*) "sunLat:  ",sunLat
-      write(*,*) "(x,y,z):    ",x,y,z
-      write(*,*) "inside:     ",inside
-      write(*,*) "(bx,by,bz):    ",bx,by,bz
-      write(*,*) "(hx,hy,hz):    ",hx,hy,hz
-      write(*,*) "(r,theta,phi):    ",r,theta,phi
-      write(*,*) "(br,btheta,bphi):    ",br,btheta,bphi
-      
+      write(*,*) "TDT:                ",TDT
+      write(*,*) "Dp:                 ",pdyn
+      write(*,*) "sunLat:             ",sunLat
+      write(*,*) "(x,y,z):            ",x,y,z
+      write(*,*) "inside:             ",inside
+      write(*,*) "(bx,by,bz):         ",bx,by,bz
+      write(*,*) "(hx,hy,hz):         ",hx,hy,hz
+      write(*,*) "(r,theta,phi):      ",r,theta,phi
+      write(*,*) "(br,btheta,bphi):   ",br,btheta,bphi
+      write(*,*) "Closest CS (x,y,z): ",xCS,yCS,zCS
+      write(*,*) "Dist. to CS:        ",distCS
+
       end program
       
