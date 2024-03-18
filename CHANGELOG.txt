@@ -1,3 +1,7 @@
+----- Version 1.0.2, 2024/03/18
+
+- New capabilites were added to evaluate the minimum (shortest) distance between a point and the Bowl current sheet. The example program now demonstrates how to evaluate this.
+
 ----- Version 1.0.1, 2023/11/08
 
 - A function was added to determine if a location is inside or outside the modeled magnetopause surface. The example program now reflects this change.
