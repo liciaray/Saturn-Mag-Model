@@ -1,0 +1,31 @@
+      SUBROUTINE create_filename(year,month,
+     .     dom,hour,min,sec)
+
+      implicit none
+      character(len=100) :: base_filename, filename
+      character(len=8) :: date_str
+      character(len=5) :: time_str
+      integer :: iyear, imonth, iday, ihour, iminute
+      character(len=4) :: year_str, month_str, day_str, hour_str, minute_str
+      
+c     Set date and time values (just an example)
+      iyear = 2023
+      imonth = 10
+      iday = 27
+      ihour = 15
+      iminute = 45
+      
+c     Convert integers to strings
+      write(year_str, '(I4)') iyear
+      write(month_str, '(I2.2)') imonth
+      write(day_str, '(I2.2)') iday
+      write(hour_str, '(I2.2)') ihour
+      write(minute_str, '(I2.2)') iminute
+      
+c     Build the filename by concatenating parts
+      base_filename = 'event_'
+      filename = base_filename // year_str // month_str // day_str // '_' // hour_str // minute_str // '.txt'
+      
+      ! Output the filename
+      print *, 'Generated filename: ', filename
+      end program create_filename
