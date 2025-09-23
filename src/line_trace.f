@@ -1,7 +1,7 @@
-c     June 2019, G.K.Stephens: Initial prototype.
+c     Jan 2025 Licia Ray
       SUBROUTINE line_trace (sunLat, pDyn,
      .     inside,
-     .     x,y,z,
+     .     x,y,z,s,
      .     bx,by,bz,
      .     hx,hy,hz,
      .     bTotx,bToty,bTotz,bMag,
@@ -33,35 +33,41 @@ c
 
       logical geometry
       
-      real*8 x,y,z
+      real*8 x,y,z,s,r_oblate
       
       real*8 bx,by,bz, hx,hy,hz, bTotx,bToty,bTotz
       real*8 r,theta,phi
       real*8 br,btheta,bphi
       real*8 bMag, dx,dy,dz, ds
-      character(len=37) outfilename
-      character(len=27) geo_file
+      character(len=60) geo_file
 
-      ds = 600.0
+      ds = 800.0
 
+           
       if (geometry) then
 
          io = 15
 
-         outfilename = "../output/"//geo_file
-
-         open(unit=io, file=outfilename, status="new", action="write")
-         write(io,'(A,A,A,A,A)')
+         open(unit=io, file=geo_file, status="new", action="write")
+         write(io,'(A,A,A,A,A,A)')
      .        "x               ",
      .        "y               ",
      .        "z               ",
      .        "r_evaluation    ",
+     .        "line_length     ",
      .        "Bmag            "
-         write(io,'(5F12.5)') x,y,z,r,Bmag
+         write(io,'(6F12.5)') x,y,z,r,s,Bmag
       endif
 
+c      Write(*,*) "Coordinates in line trace:   ", x, y, z
       
-      do while (r > (1.024 - 1./11.1*DABS(DCOS(theta))**2))
+
+      r_oblate = DSQRT(1./(1.+(1./(1-1./11.1)**2 - 1)*
+     .     (DCOS(theta)**2)))
+
+
+c     Trace the field to an altitude of 10000 above the surface      
+      do while (r > (0.166 + r_oblate))
 
 c     determine the unit vectors for the field to use in
 c     tracing the field line towards the planet
@@ -69,9 +75,11 @@ c     tracing the field line towards the planet
          dy = bToty/bMag
          dz = bTotz/bMag
       
-         x = x + direction/ds*dx
-         y = y + direction/ds*dy
-         z = z + direction/ds*dz
+         x = x + direction/(ds/(r))*dx
+         y = y + direction/(ds/(r))*dy
+         z = z + direction/(ds/(r))*dz
+
+         s = s + (r/ds)
       
 c     Evaluates the external magnetic field in KSM coordinates in units
 c     of nT. As stated above, this subroutine will still return vectors
@@ -97,9 +105,12 @@ c     Converts the Cartesian coordinates to spherical coordinates.
 
          if (geometry) then
 c     Write coordinates and field magnitude to file
-            write(io,'(5F12.5)') x,y,z,r,Bmag
+            write(io,'(6F12.5)') x,y,z,r,s,Bmag
          endif
-                 
+
+         r_oblate = DSQRT(1./(1.+(1./(1-1./11.1)**2 - 1)*
+     .        (DCOS(theta)**2)))
+         
       end do
 
       if (geometry) then

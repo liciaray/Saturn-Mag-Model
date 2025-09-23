@@ -52,7 +52,7 @@ c     skip past the header
          event_x(count) = sc_x
          event_y(count) = sc_y
          event_z(count) = sc_z
-         
+
          IF (EOF<0) EXIT
       ENDDO            
       
