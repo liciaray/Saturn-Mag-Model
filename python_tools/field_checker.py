@@ -13,13 +13,14 @@ from matplotlib import cm
 from matplotlib.colors import Normalize
 
 
-field_line = np.loadtxt('../output/Bfield_Coordinates.txt', skiprows=1)
+field_line = np.loadtxt('../output/event_2006-07-12T07h23m.txt', skiprows=1)
 
 x_field = field_line[:,0]
 y_field = field_line[:,1]
 z_field = field_line[:,2]
 r_field = field_line[:,3]
-b_mag   = field_line[:,4]
+s_field = field_line[:,4]
+b_mag   = field_line[:,5]
 
 
 #make a oblate sphere to represent saturn
@@ -77,7 +78,7 @@ ax.set_ylim(mid_y - max_range/2, mid_y + max_range/2)
 ax.set_zlim(mid_z - max_range/2, mid_z + max_range/2)
 
 
-plt.savefig("Sanity_Check.png")
+plt.savefig("OddPoint.png")
 
 # Show the plot
 plt.show(block=True)
