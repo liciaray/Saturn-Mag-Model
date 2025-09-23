@@ -32,13 +32,14 @@ c
 
       character*(512) pdynfile
       character*(512) eventsfile
+      character*(512) footprintsFile
 
       integer noEvents
-      parameter (noEvents = 4)
+      parameter (noEvents = 5000)
       integer final_count
 
-      integer i
-      
+      integer i,out
+
       integer event_year(noEvents)
       integer event_month(noEvents)
       integer event_dom(noEvents)
@@ -47,7 +48,7 @@ c
       real*8 event_x(noEvents)
       real*8 event_y(noEvents)
       real*8 event_z(noEvents)
-      
+          
       integer year,month,dom,hour,min
       integer direction
       real*8 sec
@@ -61,7 +62,7 @@ c
       logical inside,inside_magpause
       logical geometry
       
-      real*8 x,y,z
+      real*8 x,y,z,s
       
       real*8 bx,by,bz, hx,hy,hz, bTotx,bToty,bTotz
       real*8 r,theta,phi, br,btheta,bphi, bMag
@@ -70,7 +71,7 @@ c
       character(len=60) geo_file
 
 c     Set whether you want the field line coordinates saved for each field line
-      geometry = .FALSE.
+      geometry = .TRUE.
       
 c     The file containing the dynamic pressure of the solar wind at
 c     Saturn. This file is derived from the Tao et al. (2005) model and
@@ -78,8 +79,10 @@ c     was obtained from the AMDA archive.
       pdynfile = "Dp.txt"
       pdynfile = trim(pdynfile)
 
-      eventsfile = "../input/test2.csv"
+      eventsfile = "../input/list_for_tracing.csv"
       eventsfile = trim(eventsfile)
+
+      footprintsFile = "../output/single_annoyance.txt"
 
 c     Reads and stores the results of the Dynamic pressure file.
 c     This call must be made once prior to evaluating the dynamic
@@ -90,18 +93,26 @@ c     pressure. Once called, this does not need called again.
      .     event_month, event_dom, event_hour, event_min,
      .     event_x,event_y,event_z,final_count,noEvents)
 
-      write(*,*) "Year =",event_year
-      write(*,*) "Month =",event_month
-      write(*,*) "Day =",event_dom
-      write(*,*) "Hour =",event_hour
-      write(*,*) "Min =",event_min
-      write(*,*) "x =",event_x
-      write(*,*) "y =",event_y
-      write(*,*) "x =",event_z
-      write(*,*) "Number events = ", noEvents
-      
-      do i = 1, noEvents
-      
+
+c     Open the output file
+      out = 55
+      open(unit=out,file=footprintsFile,status="new",action="write")
+
+c     First part of the header to write footprint location
+c     for events
+      write(out, '(A,A,A,A,A,A,A,A,A,A,A,A,A)')
+     .     "  Year  ", "  Month  ", "  Day  ",
+     .     "  Hour  ", "  Minute  ", "  x_Cassini  ",
+     .     "  y_Cassini  ", "  z_Cassini  ",
+     .     "  x_footprint  ", "  y_footprint  ",
+     .     "  z_footprint  ", "r_footprint ","  B_footprint(nT)",
+     .     "  field_length(RS)"
+     
+      do i = 1, 1
+c     final_count
+
+
+c      write(*,*) "Event number:   ", i   
 c     The UTC date and time to evaluate the model. The format follows
 c     the standard year-month-dayofmonth format, where these fields
 c     start from 1, e.g. month=1 corresonds to January, and the time
@@ -119,6 +130,7 @@ c     they are to be saved
       if (geometry) then
          call create_filename(year,month,
      .        dom,hour,min,geo_file)
+         write(*,*) geo_file
       endif
       
 c     Evaluates the dynamic pressure at Saturn for the given time.
@@ -139,13 +151,19 @@ c     The position vector in KSM coordinates in units of Saturn radii.
       y = event_y(i)
       z = event_z(i)
 
+c     Initialise the length calculation
+      s = 0.0
+
+c      write(*,*) "Events position:   ", event_x(i), event_y(i),
+c     .     event_z(i)
+
+c      write(*,*) "Time:    ",year, month, dom, hour, min, sec
+c      Write(*,*) "Coordinates:   ", i, x, y, z
+
+      
 c     Evalutes if the position vector is inside or outside the modeled
-c     magnetopause (true if inside, false if on or outside). Note, if
-c     the position is outside the magnetopause, the subroutines
-c     saturn_ext and saturn_int will still return vectors, but these
-c     vectors will not have any physical signficance. We leave it up to
-c     the user to decide how to handle vectors outside the
-c     magnetosphere.     
+c     magnetopause (true if inside, false if on or outside). If false, stop
+c     the code.
       inside = inside_magpause(sunLat, pDyn,
      .     x,y,z)
 
@@ -153,7 +171,7 @@ c     magnetosphere.
          write(*,*) "Outside"
          stop
       endif
-      
+
 c     Evaluates the external magnetic field in KSM coordinates in units
 c     of nT. As stated above, this subroutine will still return vectors
 c     even if the position vector is outside the modeled magnetopause.
@@ -171,7 +189,7 @@ c     fields.
       bToty = by + hy
       bTotz = bz + hz
       bMag  = DSQRT(bTotx**2+bToty**2+bTotz**2)
-
+  
 c     Converts the Cartesian total field value to spherical coordinates.
       call cart_field_to_sphere(x,y,z,
      .     bTotx,bToty,bTotz,
@@ -180,50 +198,43 @@ c     Converts the Cartesian total field value to spherical coordinates.
 c     Determine if field is above or below current sheet using the
 c     radial component of the field
       if (br < 0) then
+c     to southern hemisphere
          direction = 1
-         write(*,*) "Will go to southern hemisphere"
       else
+c     to northern hemisphere
          direction = -1
-         write(*,*) "Will go to northern hemisphere"
       end if
 
-c     Evaluates the distance and the closest location from the supplied
-c     location to the Bowl shaped current sheet.
-c      call distance_to_sheet(sunLat, pDyn, x,y,z, xCS,yCS,zCS, distCS)
+c     Traces the total magnetic field to the
+c     desired location (currently hard set in line_trace)
+c     and provides coordinates and magnutude of field at
+c     desired endpoint
+      if (abs(y).lt.45) then
+         write(*,*) "Whoop!"
+         
+         call line_trace(sunLat, pDyn,
+     .        inside,
+     .        x,y,z,s,
+     .        bx,by,bz,
+     .        hx,hy,hz,
+     .        bTotx,bToty,bTotz,bMag,
+     .        r,theta,phi,
+     .        direction,geometry,
+     .        geo_file)
+
+      write(*,*) "Coordinates:   ", i, bMag, s
+         
+c     Write to file
+         write(out, '(I4,A,I2,A,I2,A,I2,A,I2,3F13.8,6F12.5)')
+     .        year,' ', month, ' ', dom, ' ', hour,' ', min,
+     .        event_x(i), event_y(i), event_z(i),
+     .        x, y, z, r, bMag, s
+         
+      endif
       
-c     Prints out the results.
-      write(*,'(A,I4,A,I0.2,A,I0.2,A,I0.2,A,I0.2,A,F8.5)')
-     .     "Date:            ",year,"-",month,"-",dom,
-     .     " ",hour,":",min,":",sec
-      write(*,*) "TDT:                ",TDT
-      write(*,*) "Dp:                 ",pdyn
-      write(*,*) "sunLat:             ",sunLat
-      write(*,*) "(x,y,z):            ",x,y,z
-      write(*,*) "inside:             ",inside
-      write(*,*) "(bx,by,bz):         ",bx,by,bz
-      write(*,*) "(hx,hy,hz):         ",hx,hy,hz
-      write(*,*) "(r,theta,phi):      ",r,theta*180/3.14,phi*180/3.14
-
-c     Evaluates the total magnetic field at the provided location
-      call line_trace(sunLat, pDyn,
-     .     inside,
-     .     x,y,z,
-     .     bx,by,bz,
-     .     hx,hy,hz,
-     .     bTotx,bToty,bTotz,bMag,
-     .     r,theta,phi,
-     .     direction,geometry,
-     .     geo_file)
-
-c     Prints out the results.
-      write(*,*) "Field footprint details"
-      write(*,*) "(x,y,z):            ",x,y,z
-      write(*,*) "(bx,by,bz):         ",bx,by,bz
-      write(*,*) "(hx,hy,hz):         ",hx,hy,hz
-      write(*,*) "(r,theta,phi):      ",r,theta*180./3.14,phi*180/3.14
-      write(*,*) "(bMag):             ",bMag
-
       end do
+      
+      close(out)
       
       end program
       
