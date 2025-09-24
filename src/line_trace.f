@@ -41,7 +41,7 @@ c
       real*8 bMag, dx,dy,dz, ds
       character(len=60) geo_file
 
-      ds = 800.0
+      ds = 1000.0
 
            
       if (geometry) then
@@ -67,7 +67,7 @@ c      Write(*,*) "Coordinates in line trace:   ", x, y, z
 
 
 c     Trace the field to an altitude of 10000 above the surface      
-      do while (r > (0.166 + r_oblate))
+      do while ((r > (0.166 + r_oblate)).and.(s < 90.0))
 
 c     determine the unit vectors for the field to use in
 c     tracing the field line towards the planet

@@ -35,7 +35,7 @@ c
       character*(512) footprintsFile
 
       integer noEvents
-      parameter (noEvents = 5000)
+      parameter (noEvents = 8000)
       integer final_count
 
       integer i,out
@@ -71,7 +71,7 @@ c
       character(len=60) geo_file
 
 c     Set whether you want the field line coordinates saved for each field line
-      geometry = .TRUE.
+      geometry = .FALSE.
       
 c     The file containing the dynamic pressure of the solar wind at
 c     Saturn. This file is derived from the Tao et al. (2005) model and
@@ -79,10 +79,10 @@ c     was obtained from the AMDA archive.
       pdynfile = "Dp.txt"
       pdynfile = trim(pdynfile)
 
-      eventsfile = "../input/list_for_tracing.csv"
+      eventsfile = "../input/list_for_tracing_fromAllTimes.csv"
       eventsfile = trim(eventsfile)
 
-      footprintsFile = "../output/single_annoyance.txt"
+      footprintsFile = "../output/output_from_all_times_to_trace.txt"
 
 c     Reads and stores the results of the Dynamic pressure file.
 c     This call must be made once prior to evaluating the dynamic
@@ -108,8 +108,7 @@ c     for events
      .     "  z_footprint  ", "r_footprint ","  B_footprint(nT)",
      .     "  field_length(RS)"
      
-      do i = 1, 1
-c     final_count
+      do i = 1,final_count
 
 
 c      write(*,*) "Event number:   ", i   
@@ -167,50 +166,48 @@ c     the code.
       inside = inside_magpause(sunLat, pDyn,
      .     x,y,z)
 
-      if (.not. inside) then
-         write(*,*) "Outside"
-         stop
-      endif
+      if (inside) then
+         write(*,*) "Inside!"
 
 c     Evaluates the external magnetic field in KSM coordinates in units
 c     of nT. As stated above, this subroutine will still return vectors
 c     even if the position vector is outside the modeled magnetopause.
-      call saturn_ext(sunLat, pDyn,
-     .     x,y,z,
-     .     bx,by,bz)
+         call saturn_ext(sunLat, pDyn,
+     .        x,y,z,
+     .        bx,by,bz)
 
 c     Evaluates the internal magnetic field (Dougherty et al. 2018) in
 c     KSM coordinates in units of nT.
-      call saturn_int(sunLat, x,y,z, hx,hy,hz)
+         call saturn_int(sunLat, x,y,z, hx,hy,hz)
       
 c     The total magnetic field is the sum of the external and internal
 c     fields.
-      bTotx = bx + hx
-      bToty = by + hy
-      bTotz = bz + hz
-      bMag  = DSQRT(bTotx**2+bToty**2+bTotz**2)
+         bTotx = bx + hx
+         bToty = by + hy
+         bTotz = bz + hz
+         bMag  = DSQRT(bTotx**2+bToty**2+bTotz**2)
   
 c     Converts the Cartesian total field value to spherical coordinates.
-      call cart_field_to_sphere(x,y,z,
-     .     bTotx,bToty,bTotz,
-     .     r,theta,phi, br,btheta,bphi)
-
+         call cart_field_to_sphere(x,y,z,
+     .        bTotx,bToty,bTotz,
+     .        r,theta,phi, br,btheta,bphi)
+         
 c     Determine if field is above or below current sheet using the
 c     radial component of the field
-      if (br < 0) then
+         if (br < 0) then
 c     to southern hemisphere
-         direction = 1
-      else
+            direction = 1
+         else
 c     to northern hemisphere
-         direction = -1
-      end if
+            direction = -1
+         end if
 
 c     Traces the total magnetic field to the
 c     desired location (currently hard set in line_trace)
 c     and provides coordinates and magnutude of field at
 c     desired endpoint
-      if (abs(y).lt.45) then
-         write(*,*) "Whoop!"
+c         if (abs(y).lt.45) then
+c            write(*,*) "Whoop!"
          
          call line_trace(sunLat, pDyn,
      .        inside,
@@ -221,8 +218,8 @@ c     desired endpoint
      .        r,theta,phi,
      .        direction,geometry,
      .        geo_file)
-
-      write(*,*) "Coordinates:   ", i, bMag, s
+         
+         write(*,*) "Coordinates:   ", i, bMag, s
          
 c     Write to file
          write(out, '(I4,A,I2,A,I2,A,I2,A,I2,3F13.8,6F12.5)')
@@ -230,6 +227,8 @@ c     Write to file
      .        event_x(i), event_y(i), event_z(i),
      .        x, y, z, r, bMag, s
          
+c     endif
+
       endif
       
       end do
