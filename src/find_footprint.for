@@ -1,4 +1,5 @@
-c     June 2019, G.K.Stephens: Initial prototype.
+c     September 2025 L.C.Ray: Extended for line tracing/output functionality
+c     June 2019 G.K.Stephens: Initial prototype.
       program find_footprint
 c
 c     This is an example program that demonstrates how to evaluate both
@@ -79,9 +80,11 @@ c     was obtained from the AMDA archive.
       pdynfile = "Dp.txt"
       pdynfile = trim(pdynfile)
 
+c     Input file name here. Needs Time, X, Y, Z (in Rs)      
       eventsfile = "../input/list_for_tracing_fromAllTimes.csv"
       eventsfile = trim(eventsfile)
 
+c     Output file name here.  
       footprintsFile = "../output/output_from_all_times_to_trace.txt"
 
 c     Reads and stores the results of the Dynamic pressure file.
@@ -218,7 +221,8 @@ c            write(*,*) "Whoop!"
      .        r,theta,phi,
      .        direction,geometry,
      .        geo_file)
-         
+
+c    Output for sanity check     
          write(*,*) "Coordinates:   ", i, bMag, s
          
 c     Write to file

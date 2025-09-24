@@ -66,7 +66,10 @@ c      Write(*,*) "Coordinates in line trace:   ", x, y, z
      .     (DCOS(theta)**2)))
 
 
-c     Trace the field to an altitude of 10000 above the surface      
+c     Trace the field to an altitude of 10000 above the surface or
+c     until the trace exceeds 90 RS in length as it's likely that 
+c     the code has gone off piste by then, often due to proximity
+c     to the magnetopause boundary
       do while ((r > (0.166 + r_oblate)).and.(s < 90.0))
 
 c     determine the unit vectors for the field to use in
