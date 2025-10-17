@@ -8,16 +8,16 @@ Created on 27 January 2025
 
 import pandas as pd
 
-#df = pd.read_csv('../input/All_the_times_to_trace_5Mar.csv')
-df = pd.read_csv('../input/selection_for_licia.csv')
+df = pd.read_csv('../input/2004_2012_cassini_position_in_one_hour_bins.csv')
+
 
 df_short = df[['TIME','orb_x','orb_y','orb_z']]
 
 df_short['TIME'] = pd.to_datetime(df_short['TIME'], format='%d/%m/%Y %H:%M')
-df_short['TIME'] = df_short['TIME'].dt.strftime('%Y-%m-%dT%H:%M')
+#df_short['TIME'] = df_short['TIME'].dt.strftime('%Y-%m-%dT%H:%M')
 
 #df_short['TIME'] = pd.to_datetime(df_short['TIME'], format='%Y-%m-%dT%H:%M:%S')
-#df_short['TIME'] = df_short['TIME'].dt.strftime('%Y-%m-%dT%H:%M')
+df_short['TIME'] = df_short['TIME'].dt.strftime('%Y-%m-%dT%H:%M')
 
 numeric_columns = df_short.select_dtypes(include=['number']).columns
 print(numeric_columns)
